@@ -19,11 +19,10 @@ function point:new(x_, y_)
 
 end
 
-
 --========= Variables & data structs ====================
 gridSize = 20
 score = 0
-state = "MAKEMOVE" -- 	States: GAMEOVER, MAKEMOVE, UPDATEGFX
+state = "MAKEMOVE" 		-- States: GAMEOVER, MAKEMOVE, UPDATEGFX
 
 color = {
 	{255,0,0,255},
@@ -76,7 +75,7 @@ end
 function newBoard()
 	for y = 1, #board do
 		for x = 1, #board[y] do
-			board[y][x] = love.math.random(1, 4)
+			board[y][x] = color[love.math.random(1, 4)]
 		end
 	end
 end
@@ -124,7 +123,8 @@ function love.update(dt)
 	if isGameOver() then
 		state = "GAMEOVER"
 	elseif state == "ANIMATEBOARD" then
-		if changeMade() == false then
+--		if changeMade() == false then
+		if fade() == false then
 			state = "MAKEMOVE"
 		end
 	end
@@ -153,9 +153,9 @@ end
 function makeMove(selectedColor)
 	changes = {}	-- reset previous changes
 	position = point:new(1, 1)
-	if board[1][1] ~= selectedColor then 
+	if board[1][1] ~= color[selectedColor] then 
 		score = score + 1
-		fill(board[1][1], selectedColor, position)
+		fill(board[1][1], color[selectedColor], position)
 	end
 end
 
@@ -172,6 +172,30 @@ function changeMade()
 	return true
 end
 
+function fade()
+	local _point
+	if #changes == 0 then return false end
+	
+	if changes[1].color[4] <= 0 then
+		return false
+	end
+	t1 = {}
+	print(#changes)
+	t1 = deepcopy(changes)	
+	for i = 1, #t1 do
+--		_point = changes[i]
+--		_point.color[4] = _point.color[4] - 5
+--		gfxBoard[_point.y][_point.x] = _point.color
+--	t2 = setmetatable(t1, getmetatable(changes[i]))
+print(t1)
+
+--	_point = changes[i]
+--	_point.color[4] = _point.color[4] * 0.5
+--		gfxBoard[_point.y][_point.x] = _point.color
+	end
+	changes = {}
+	return true
+end
 
 -- Check the board in reverse order to see if the game is complete.
 function isGameOver()
@@ -185,6 +209,8 @@ function isGameOver()
 	end
 	return true
 end
+
+
 
 --[[ Recursive function. Fills the board
 targetCol - color integer
@@ -226,7 +252,7 @@ function drawBoard()
 	love.graphics.setColor(0,0,0,255)
 	for y = 1, #gfxBoard do
 		for x = 1, #gfxBoard[y] do
-			love.graphics.setColor(color[gfxBoard[y][x]])
+			love.graphics.setColor(gfxBoard[y][x])
 			love.graphics.rectangle("fill", x*gridSize, y*gridSize, gridSize, gridSize)
 		end
 	end
