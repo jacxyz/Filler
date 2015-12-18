@@ -19,11 +19,10 @@ function point:new(x_, y_)
 
 end
 
-
 --========= Variables & data structs ====================
 gridSize = 20
 score = 0
-state = "MAKEMOVE" -- 	States: GAMEOVER, MAKEMOVE, UPDATEGFX
+state = "MAKEMOVE" 		-- States: GAMEOVER, MAKEMOVE, UPDATEGFX
 
 color = {
 	{255,0,0,255},
@@ -76,7 +75,7 @@ end
 function newBoard()
 	for y = 1, #board do
 		for x = 1, #board[y] do
-			board[y][x] = love.math.random(1, 4)
+			board[y][x] = color[love.math.random(1, 4)]
 		end
 	end
 end
@@ -124,7 +123,9 @@ function love.update(dt)
 	if isGameOver() then
 		state = "GAMEOVER"
 	elseif state == "ANIMATEBOARD" then
-		if changeMade() == false then
+--		if changeMade() == false then
+		if fade() == false then
+			setColor()
 			state = "MAKEMOVE"
 		end
 	end
@@ -153,9 +154,9 @@ end
 function makeMove(selectedColor)
 	changes = {}	-- reset previous changes
 	position = point:new(1, 1)
-	if board[1][1] ~= selectedColor then 
+	if board[1][1] ~= color[selectedColor] then 
 		score = score + 1
-		fill(board[1][1], selectedColor, position)
+		fill(board[1][1], color[selectedColor], position)
 	end
 end
 
@@ -172,6 +173,29 @@ function changeMade()
 	return true
 end
 
+function fade()
+	local _point
+	if #changes == 0 then return false end
+
+	if (gfxBoard[changes[1].y][changes[1].x])[4] <= 0 then
+	print("false")
+		return false
+	end
+
+	for i = 1, #changes do
+		_color = gfxBoard[changes[i].y][changes[i].x]
+		_color[4] =_color[4] - 5
+		gfxBoard[changes[i].y][changes[i].x] = _color
+
+	end
+	return true
+end
+
+function setColor()
+	for i = 1, #changes do
+		gfxBoard[changes[i].y][changes[i].x] = changes[i].color
+	end
+end
 
 -- Check the board in reverse order to see if the game is complete.
 function isGameOver()
@@ -186,6 +210,8 @@ function isGameOver()
 	return true
 end
 
+
+
 --[[ Recursive function. Fills the board
 targetCol - color integer
 selectedColor - color integer
@@ -198,7 +224,7 @@ function fill(targetCol, selectedColor, position)
 	end
 
 	board[position.y][position.x] = selectedColor
-	position.color = selectedColor
+	position.color = deepcopy(selectedColor)
 	changes[#changes+1] = position
 	
 	if position.x+1 < #board[1]+1 and board[position.y][position.x + 1] == targetCol then			-- Right
@@ -226,7 +252,7 @@ function drawBoard()
 	love.graphics.setColor(0,0,0,255)
 	for y = 1, #gfxBoard do
 		for x = 1, #gfxBoard[y] do
-			love.graphics.setColor(color[gfxBoard[y][x]])
+			love.graphics.setColor(gfxBoard[y][x])
 			love.graphics.rectangle("fill", x*gridSize, y*gridSize, gridSize, gridSize)
 		end
 	end
