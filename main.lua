@@ -125,6 +125,7 @@ function love.update(dt)
 	elseif state == "ANIMATEBOARD" then
 --		if changeMade() == false then
 		if fade() == false then
+			setColor()
 			state = "MAKEMOVE"
 		end
 	end
@@ -175,26 +176,25 @@ end
 function fade()
 	local _point
 	if #changes == 0 then return false end
-	
-	if changes[1].color[4] <= 0 then
+
+	if (gfxBoard[changes[1].y][changes[1].x])[4] <= 0 then
+	print("false")
 		return false
 	end
-	t1 = {}
-	print(#changes)
-	t1 = deepcopy(changes)	
-	for i = 1, #t1 do
---		_point = changes[i]
---		_point.color[4] = _point.color[4] - 5
---		gfxBoard[_point.y][_point.x] = _point.color
---	t2 = setmetatable(t1, getmetatable(changes[i]))
-print(t1)
 
---	_point = changes[i]
---	_point.color[4] = _point.color[4] * 0.5
---		gfxBoard[_point.y][_point.x] = _point.color
+	for i = 1, #changes do
+		_color = gfxBoard[changes[i].y][changes[i].x]
+		_color[4] =_color[4] - 5
+		gfxBoard[changes[i].y][changes[i].x] = _color
+
 	end
-	changes = {}
 	return true
+end
+
+function setColor()
+	for i = 1, #changes do
+		gfxBoard[changes[i].y][changes[i].x] = changes[i].color
+	end
 end
 
 -- Check the board in reverse order to see if the game is complete.
@@ -224,7 +224,7 @@ function fill(targetCol, selectedColor, position)
 	end
 
 	board[position.y][position.x] = selectedColor
-	position.color = selectedColor
+	position.color = deepcopy(selectedColor)
 	changes[#changes+1] = position
 	
 	if position.x+1 < #board[1]+1 and board[position.y][position.x + 1] == targetCol then			-- Right
